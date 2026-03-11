@@ -17,8 +17,12 @@ def main():
     # データを一括で取得
     entries = get_all_entries()
     
-    # APIキーの有無確認（コンポーネントに渡す用）
-    has_api_key = bool(os.getenv("GEMINI_API_KEY"))
+    # APIキーの有無確認
+    has_api_key = False
+    if hasattr(st, "secrets") and "GEMINI_API_KEY" in st.secrets:
+        has_api_key = True
+    elif os.getenv("GEMINI_API_KEY"):
+        has_api_key = True
     
     # モバイル向けの1カラムナビゲーション
     nav_options = ["✏️ 日記を書く", "📚 日記一覧", "📊 一週間のまとめ", "🕸 関係性ツリー"]

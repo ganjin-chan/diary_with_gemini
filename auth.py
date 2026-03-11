@@ -5,10 +5,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Streamlit Cloud (st.secrets) or Local (.env)
-if hasattr(st, "secrets") and "ADMIN_PASSWORD" in st.secrets:
-    ADMIN_PASSWORD = st.secrets["ADMIN_PASSWORD"]
-else:
-    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "secret")
+def get_admin_password():
+    if hasattr(st, "secrets"):
+        if "ADMIN_PASSWORD" in st.secrets:
+            return str(st.secrets["ADMIN_PASSWORD"]).strip()
+        # [firebase] セクション内に誤って入れてしまった場合も考慮
+        if "firebase" in st.secrets and "ADMIN_PASSWORD" in st.secrets["firebase"]:
+            return str(st.secrets["firebase"]["ADMIN_PASSWORD"]).strip()
+    
+    return os.getenv("ADMIN_PASSWORD", "secret").strip()
+
+ADMIN_PASSWORD = get_admin_password()
 
 def authenticate():
     """環境変数を用いた簡易パスワード認証"""
