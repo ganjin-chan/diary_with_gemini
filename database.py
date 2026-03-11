@@ -8,12 +8,21 @@ from datetime import datetime, timedelta, timezone
 def get_db():
     """Firestoreの初期化とクライアント取得"""
     if not firebase_admin._apps:
-        cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH")
-        if cred_path and os.path.exists(cred_path):
-            cred = credentials.Certificate(cred_path)
+        # Streamlit Deploy (st.secrets)
+        if hasattr(st, "secrets") and "firebase" in st.secrets:
+            import json
+            # st.secrets("firebase") is an AttrDict, we can convert it to a dict
+            cert_dict = dict(st.secrets["firebase"])
+            cred = credentials.Certificate(cert_dict)
             firebase_admin.initialize_app(cred)
         else:
-            firebase_admin.initialize_app()
+            # Local deployment (.env)
+            cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH")
+            if cred_path and os.path.exists(cred_path):
+                cred = credentials.Certificate(cred_path)
+                firebase_admin.initialize_app(cred)
+            else:
+                firebase_admin.initialize_app()
     return firestore.client()
 
 try:
