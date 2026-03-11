@@ -5,7 +5,11 @@ import streamlit as st
 import google.generativeai as genai
 
 # APIキーの設定
-api_key = os.getenv("GEMINI_API_KEY")
+if hasattr(st, "secrets") and "GEMINI_API_KEY" in st.secrets:
+    api_key = st.secrets["GEMINI_API_KEY"]
+else:
+    api_key = os.getenv("GEMINI_API_KEY")
+
 if api_key:
     genai.configure(api_key=api_key)
 

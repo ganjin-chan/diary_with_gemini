@@ -4,7 +4,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "secret")
+# Streamlit Cloud (st.secrets) or Local (.env)
+if hasattr(st, "secrets") and "ADMIN_PASSWORD" in st.secrets:
+    ADMIN_PASSWORD = st.secrets["ADMIN_PASSWORD"]
+else:
+    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "secret")
 
 def authenticate():
     """環境変数を用いた簡易パスワード認証"""
