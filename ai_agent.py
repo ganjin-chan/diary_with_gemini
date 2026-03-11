@@ -3,6 +3,17 @@ import json
 import tempfile
 import streamlit as st
 import google.generativeai as genai
+from datetime import timezone, timedelta
+
+JST = timezone(timedelta(hours=9), 'JST')
+
+def get_jst_string(dt):
+    if not dt or not hasattr(dt, 'strftime'):
+        return str(dt) if dt else "日時不明"
+    if dt.tzinfo is not None:
+        return dt.astimezone(JST).strftime("%Y-%m-%d %H:%M")
+    return (dt + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")
+
 
 # APIキーの設定
 if hasattr(st, "secrets") and "GEMINI_API_KEY" in st.secrets:
@@ -15,7 +26,7 @@ if api_key:
 
 def generate_weekly_summary(entries):
     """直近の日記データからハイライトと感情の傾向を分析"""
-    text_data = "\n\n".join([f"【{e.get('createdAt')}】: {e.get('content')}" for e in entries])
+    text_data = "\n\n".join([f"【{get_jst_string(e.get('createdAt'))}】: {e.get('content')}" for e in entries])
     
     prompt = f"""
     以下のテキストは、私の直近1週間の日記です。この内容から、以下の2点を出力してください。
@@ -41,7 +52,7 @@ def extract_relationship_graph(entries, mode="recent_1_month"):
     text_data = ""
     for i, e in enumerate(entries):
         created_at = e.get("createdAt")
-        date_str = created_at.strftime("%Y-%m-%d %H:%M") if hasattr(created_at, 'strftime') else "日時不明"
+        date_str = get_jst_string(created_at)
         tags_str = ", ".join(e.get("tags", []))
         text_data += f"[{i}] 日付: {date_str} | タグ: {tags_str} | 内容: {e.get('content')}\n\n"
         

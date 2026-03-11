@@ -1,5 +1,16 @@
 import streamlit as st
 import json
+from datetime import timezone, timedelta
+
+JST = timezone(timedelta(hours=9), 'JST')
+
+def get_jst_string(dt):
+    if not dt or not hasattr(dt, 'strftime'):
+        return "日時不明"
+    if dt.tzinfo is not None:
+        return dt.astimezone(JST).strftime("%Y-%m-%d %H:%M")
+    return (dt + timedelta(hours=9)).strftime("%Y-%m-%d %H:%M")
+
 try:
     from streamlit_agraph import agraph, Node, Edge, Config
 except ImportError:
@@ -55,7 +66,7 @@ def list_diaries_ui(entries):
             
         with st.container(border=True):
             created_at = entry.get("createdAt")
-            date_str = created_at.strftime("%Y-%m-%d %H:%M") if created_at else "日時不明"
+            date_str = get_jst_string(created_at)
             
             st.caption(f"🗓 {date_str}")
             st.markdown(entry.get("content", ""))
